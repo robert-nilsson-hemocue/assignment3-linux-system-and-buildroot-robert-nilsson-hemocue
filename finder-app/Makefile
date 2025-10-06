@@ -2,9 +2,9 @@ CC=${CROSS_COMPILE}gcc
 
 .PHONY: clean
 
-writer: finder-app/writer.c
+writer: writer.c
 	echo "$(CC)"
-	$(CC) finder-app/writer.c -o writer
+	$(CC) writer.c -o writer
 
 clean:
 	rm -rf writer *.o
