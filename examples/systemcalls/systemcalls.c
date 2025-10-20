@@ -1,4 +1,8 @@
 #include "systemcalls.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 
 /**
  * @param cmd the command to execute with system()
@@ -11,13 +15,12 @@ bool do_system(const char *cmd)
 {
 
 /*
- * TODO  add your code here
  *  Call the system() function with the command set in the cmd
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
-    return true;
+    int return_code = system(cmd);
+    return return_code==0;
 }
 
 /**
@@ -50,7 +53,6 @@ bool do_exec(int count, ...)
     command[count] = command[count];
 
 /*
- * TODO:
  *   Execute a system command by calling fork, execv(),
  *   and wait instead of system (see LSP page 161).
  *   Use the command[0] as the full path to the command to execute
@@ -58,10 +60,24 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
-
+    fflush(stdout);
+    pid_t pid = fork();
+    if (pid < 0) { return false; }
+    int return_code;
+    if (pid == 0)
+    {
+	    //in child
+	    execv(command[0], command);
+	    perror("execv failure");
+	    exit(EXIT_FAILURE);
+    }
+    else
+    {
+	    wait(&return_code);
+    }
     va_end(args);
 
-    return true;
+    return return_code == 0;
 }
 
 /**
@@ -92,8 +108,23 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   The rest of the behaviour is same as do_exec()
  *
 */
-
+    int fd = open(outputfile, O_WRONLY|O_TRUNC|O_CREAT, 0644);
+    if (fd<0) { perror("open"); abort(); }
+    fflush(stdout);
+    int pid = fork();
+    int return_code;
+    if (pid == 0)
+    {
+	    int success = dup2(fd, 1);
+	    if (!success) { perror("Failed to redirect stdout"); }
+	    execv(command[0], command);
+    }
+    else
+    {
+	    wait(&return_code);
+    }
+    close(fd);
     va_end(args);
 
-    return true;
+    return return_code==0;
 }
