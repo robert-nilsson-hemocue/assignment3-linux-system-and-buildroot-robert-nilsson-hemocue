@@ -17,7 +17,8 @@ jobs:
           - name: Run unit test_
             run: ./unit-test.sh
     full-test:
-        container: cuaesd/aesd-autotest:24-assignment3
+        container:
+          image: localhost:5000/coursera_assignment2-rynilss
         runs-on: self-hosted
         steps:
           - uses: actions/checkout@v2
